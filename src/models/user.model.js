@@ -19,7 +19,7 @@ async function createUser({ name, email, password_hash }) {
       [name, email, password_hash]
     );
   } catch (err) {
-    throw new Error(`Databse Insert Failed: ${err.message}`);
+    throw new Error(`Create User Failed: ${err.message}`);
   } finally {
     client.release();
   }

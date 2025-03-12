@@ -1,4 +1,4 @@
-import { isValidEmail, hashPassword } from "../utils/auth-utils.js";
+import { isValidEmail, hashPassword, generateToken } from "../utils/auth-utils.js";
 import { createUser } from "../models/user.model.js";
 
 const register = async (req, res) => {
@@ -23,11 +23,12 @@ const register = async (req, res) => {
 
   try {
     await createUser({
-      name: name,
+      name: name.trim(),
       email: email,
       password_hash: password_hash
     });
-    res.status(200).json({ success: true });
+    const jwtToken = generateToken(name.trim(), email);
+    res.status(200).json({ success: true, token: jwtToken });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
