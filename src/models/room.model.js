@@ -1,18 +1,19 @@
 import db_pool from "../db/connection.js";
 /**
  * @param {string} hostEmail
+ * @param {string} roomName
  * @returns {Promise<number>}
  */
-async function createRoom(hostEmail) {
+async function createRoom(hostEmail, roomName) {
   const query = `--sql
-    INSERT INTO "Room" (room_owner_id)
-    VALUES ((SELECT id FROM "User" WHERE email = $1))
+    INSERT INTO "Room" (room_owner_id, room_name)
+    VALUES ((SELECT id FROM "User" WHERE email = $1), $2)
     RETURNING id;
   `;
 
   const client = await db_pool.connect();
   try {
-    const res = await client.query(query, [hostEmail]);
+    const res = await client.query(query, [hostEmail, roomName]);
     return res.rows[0].id;
   } catch (err) {
     throw new Error(`Create Room Failed: ${err.message}`);
@@ -24,6 +25,7 @@ async function createRoom(hostEmail) {
 /**
  * @typedef {Object} Room
  * @property {number} id
+ * @property {string} room_name
  * @property {string} room_owner_name
  * @property {string} room_owner_email
  * @property {number} created_on_epoch
@@ -37,6 +39,7 @@ async function readRoom(roomId) {
   const query = `--sql
     SELECT
       r.id AS id,
+      r.room_name AS room_name,
       u.name AS room_owner_name,
       u.email AS room_owner_email,
       EXTRACT(EPOCH FROM r.created_on) AS created_on_epoch
@@ -67,6 +70,7 @@ async function readRoomsByOwner(hostEmail) {
   const query = `--sql
     SELECT
       r.id AS id,
+      r.room_name AS room_name,
       u.name AS room_owner_name,
       u.email AS room_owner_email,
       EXTRACT(EPOCH FROM r.created_on) AS created_on_epoch

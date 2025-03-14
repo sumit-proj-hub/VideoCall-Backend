@@ -6,7 +6,12 @@ import {
 
 const createRoomHandler = async (req, res) => {
   try {
-    const roomId = await createRoom(req.user.email);
+    const { roomName } = req.body;
+    if (typeof roomName !== "string") {
+      res.status(400).json({ error: "invalid roomName", success: false });
+      return;
+    }
+    const roomId = await createRoom(req.user.email, roomName);
     res.status(200).json({ roomId, success: true });
   } catch (err) {
     console.error(err);

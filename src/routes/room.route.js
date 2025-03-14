@@ -8,7 +8,7 @@ import verifyUser from "../middlewares/verify-user.middleware.js";
 
 const router = Router();
 
-router.get("/createRoom", verifyUser, createRoomHandler);
+router.post("/createRoom", verifyUser, createRoomHandler);
 router.get("/getRoom", getRoom);
 router.get("/getUserRooms", verifyUser, getRoomsByOwner);
 
