@@ -23,7 +23,7 @@ async function createRoom(hostEmail, roomName) {
 }
 
 /**
- * @typedef {Object} Room
+ * @typedef {object} Room
  * @property {number} id
  * @property {string} room_name
  * @property {string} room_owner_name

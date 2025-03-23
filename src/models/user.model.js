@@ -1,7 +1,7 @@
 import db_pool from "../db/connection.js";
 
 /**
- * @typedef {Object} User
+ * @typedef {object} User
  * @property {string} name
  * @property {string} email
  * @property {string} password_hash
