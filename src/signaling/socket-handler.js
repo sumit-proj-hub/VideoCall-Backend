@@ -1,24 +1,6 @@
 import { Server } from "socket.io";
 import roomState from "./room-state.js";
-
-/** @typedef {import("./room-state.js").PeerInfo} PeerInfo */
-
-/**
- * Utility function to emit events to other peers connected to room
- * @param {Map<string, PeerInfo>} room - Current Room
- * @param {string} curSocketId - Current Socket Id
- * @param {string} event - Event Name
- * @param {any} data - Data to send
- */
-const emitToOtherPeers = (room, curSocketId, event, data) => {
-  for (const socketId of room.keys()) {
-    if (socketId === curSocketId) continue;
-    const peerSocket = io.sockets.sockets.get(socketId);
-    if (peerSocket !== undefined) {
-      peerSocket.emit(event, data);
-    }
-  }
-};
+import { emitToOtherPeers } from "../utils/socket-utils.js";
 
 /**
  * Socket Signaling Server Handler
@@ -41,12 +23,12 @@ const socketHandler = (io) => {
     };
     curRoom.set(socket.id, curPeer);
 
-    emitToOtherPeers(curRoom, socket.id, "userJoined", socket.user);
+    emitToOtherPeers(io, curRoom, socket.id, "userJoined", socket.user);
 
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
 
-      emitToOtherPeers(curRoom, socket.id, "userLeft", socket.user);
+      emitToOtherPeers(io, curRoom, socket.id, "userLeft", socket.user);
 
       curRoom.delete(socket.id);
       if (curRoom.size === 0) {
