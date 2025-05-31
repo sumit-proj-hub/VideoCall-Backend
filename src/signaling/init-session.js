@@ -7,13 +7,12 @@ import { createWebRtcTransport } from "../sfu/mediasoup-config";
  * @param {string} [result.error]
  * @param {object} [result.sendTransportParams]
  * @param {object} [result.recvTransportParams]
- * @param {object} [result.rtpCapabilities]
+ * @param {import("mediasoup/types").RtpCapabilities} [result.rtpCapabilities]
  * @returns {void}
  */
 
 /**
  * Initializes the transports of new peer and informs other peers about the new peer
- * @function initSession
  * @param {Socket} socket
  * @param {import("./room-state").PeerInfo} curPeer
  * @param {import("./room-state").RoomState} curRoom
