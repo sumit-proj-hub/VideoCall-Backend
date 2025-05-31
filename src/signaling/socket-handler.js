@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import roomState from "./room-state.js";
-import { emitToOtherPeers } from "../utils/socket-utils.js";
+import { createRouter } from "../sfu/mediasoup-config.js";
+import initSession from "./init-session.js";
 
 /**
  * Socket Signaling Server Handler
@@ -10,38 +11,52 @@ const socketHandler = (io) => {
   io.on("connection", async (socket) => {
     console.log(`User ${socket.id} connected`);
 
+    /** @type {number} */
     const roomId = socket.roomInfo.id;
+    const roomIdStr = roomId.toString();
     if (!roomState.has(roomId)) {
-      roomState.set(roomId, new Map());
+      roomState.set(roomId, {
+        router: await createRouter(),
+        peerMap: new Map()
+      });
     }
 
     const curRoom = roomState.get(roomId);
+
+    /** @type {import("./room-state.js").PeerInfo} */
     const curPeer = {
       userData: socket.user,
-      sdp: null,
-      iceCandidates: []
+      sendTransport: null,
+      recvTransport: null,
+      videoProducer: null,
+      audioProducer: null,
+      consumers: new Map(),
+      isMicOn: false,
+      isVideoOn: false
     };
-    curRoom.set(socket.id, curPeer);
+    curRoom.peerMap.set(socket.id, curPeer);
 
-    emitToOtherPeers(io, curRoom, socket.id, "userJoined", socket.user);
+    socket.on("initSession", async (_, callback) => {
+      await initSession(socket, curPeer, curRoom, roomIdStr, callback);
+    });
 
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
 
-      emitToOtherPeers(io, curRoom, socket.id, "userLeft", socket.user);
+      socket.to(roomIdStr).emit("userLeft", {
+        id: socket.id,
+        userData: curPeer.userData
+      });
+      socket.leave(roomIdStr);
+      
+      if (curPeer.sendTransport) curPeer.sendTransport.close();
+      if (curPeer.recvTransport) curPeer.recvTransport.close();
 
-      curRoom.delete(socket.id);
-      if (curRoom.size === 0) {
+      curRoom.peerMap.delete(socket.id);
+      if (curRoom.peerMap.size === 0) {
+        curRoom.router.close();
         roomState.delete(roomId);
       }
-    });
-
-    socket.on("sdp", (sdp) => {
-      curPeer.sdp = sdp;
-    });
-
-    socket.on("ice", (iceCandidate) => {
-      curPeer.iceCandidates.push(iceCandidate);
     });
   });
 };
