@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { createWebRtcTransport } from "../sfu/mediasoup-config";
+import { createWebRtcTransport } from "../sfu/mediasoup-config.js";
 
 /**
  * @callback InitSessionCallback

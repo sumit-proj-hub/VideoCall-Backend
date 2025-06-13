@@ -44,6 +44,11 @@ export default async function consumeProducer(
   const peer = curRoom.peerMap.get(producerSocketId);
   const producer = kind === "video" ? peer.videoProducer : peer.audioProducer;
 
+  if (producer === null) {
+    callback({ error: "Producer Not Created" });
+    return;
+  }
+
   try {
     if (
       curRoom.router.canConsume({ producerId: producer.id, rtpCapabilities })
