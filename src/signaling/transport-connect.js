@@ -1,23 +1,20 @@
-import { Socket } from "socket.io";
-
 /**
  * Sets dtlsParameters and connects to transport
- * @param {Socket} socket
  * @param {import("./room-state").PeerInfo} curPeer
  * @param {boolean} isSender
  * @param {object} dtlsParameters
+ * @param {()=>void} callback
  * @returns {Promise<void>}
  */
 export default async function transportConnect(
-  socket,
   curPeer,
   isSender,
-  dtlsParameters
+  dtlsParameters,
+  callback
 ) {
-  if (typeof isProducer !== "boolean" || typeof dtlsParameters !== "object") {
-    socket.disconnect(true);
+  if (typeof isProducer !== "boolean" || typeof dtlsParameters !== "object")
     return;
-  }
   if (isSender) await curPeer.sendTransport.connect({ dtlsParameters });
   else await curPeer.recvTransport.connect({ dtlsParameters });
+  callback();
 }

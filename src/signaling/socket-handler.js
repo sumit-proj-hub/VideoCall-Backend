@@ -6,6 +6,7 @@ import transportConnect from "./transport-connect.js";
 import transportProduce from "./transport-produce.js";
 import consumeProducer from "./consume-producer.js";
 import changeConsumerState from "./change-consumer-state.js";
+import getAllPeers from "./get-all-peers.js";
 
 /**
  * Socket Signaling Server Handler
@@ -41,16 +42,43 @@ const socketHandler = (io) => {
     };
     curRoom.peerMap.set(socket.id, curPeer);
 
-    socket.on("initSession", async (_, callback) => {
+    socket.on("initSession", async (callback) => {
       await initSession(socket, curPeer, curRoom, roomIdStr, callback);
     });
 
-    socket.on("transportConnect", async ({ isSender, dtlsParameters }) => {
-      await transportConnect(socket, curPeer, isSender, dtlsParameters);
+    socket.on("transportConnect", async ({ isSender, dtlsParameters }, callback) => {
+      await transportConnect(curPeer, isSender, dtlsParameters, callback);
     });
 
     socket.on("transportProduce", async ({ kind, rtpParameters }, callback) => {
-      await transportProduce(socket, curPeer, kind, rtpParameters, callback);
+      await transportProduce(
+        socket,
+        roomIdStr,
+        curPeer,
+        kind,
+        rtpParameters,
+        callback
+      );
+    });
+
+    socket.on("getAllPeers", (callback) => callback(getAllPeers(curRoom)));
+
+    socket.on("clientMicToggle", (isMicOn) => {
+      curPeer.isMicOn = isMicOn;
+      socket.to(roomIdStr).emit("userMicToggle", {
+        socketId: socket.id,
+        isMicOn,
+        isVideoOn: curPeer.isVideoOn
+      });
+    });
+
+    socket.on("clientVideoToggle", (isVideoOn) => {
+      curPeer.isVideoOn = isVideoOn;
+      socket.to(roomIdStr).emit("userVideoToggle", {
+        socketId: socket.id,
+        isVideoOn,
+        isMicOn: curPeer.isMicOn
+      });
     });
 
     socket.on(
@@ -75,7 +103,7 @@ const socketHandler = (io) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
 
       socket.to(roomIdStr).emit("userLeft", {
-        id: socket.id,
+        socketId: socket.id,
         userData: curPeer.userData
       });
       socket.leave(roomIdStr);

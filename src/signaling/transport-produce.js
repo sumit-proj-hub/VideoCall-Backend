@@ -3,6 +3,7 @@ import { Socket } from "socket.io";
 /**
  * Creates a producer
  * @param {Socket} socket
+ * @param {string} roomIdStr
  * @param {import("./room-state").PeerInfo} curPeer
  * @param {string} kind
  * @param {import("mediasoup/types").RtpParameters} rtpParameters
@@ -11,22 +12,25 @@ import { Socket } from "socket.io";
  */
 export default async function transportProduce(
   socket,
+  roomIdStr,
   curPeer,
   kind,
   rtpParameters,
   callback
 ) {
   if (
-    kind !== "audio" ||
-    kind !== "video" ||
+    (kind !== "audio" && kind !== "video") ||
     typeof rtpParameters !== "object"
   ) {
     callback({ error: "Invalid Parameters" });
-    socket.disconnect(true);
     return;
   }
 
-  const producer = await curPeer.sendTransport.produce({ kind, rtpParameters });
+  const producer = await curPeer.sendTransport.produce({
+    kind,
+    rtpParameters,
+    paused: true
+  });
   producer.on("transportclose", () => producer.close());
 
   if (kind === "audio") {
@@ -36,6 +40,12 @@ export default async function transportProduce(
     if (curPeer.videoProducer !== null) curPeer.videoProducer.close();
     curPeer.videoProducer = producer;
   }
+
+  socket.to(roomIdStr).emit("producerCreated", {
+    socketId: socket.id,
+    kind: kind,
+    producerId: producer.id
+  });
 
   callback({ id: producer.id });
 }

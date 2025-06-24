@@ -29,7 +29,6 @@ export default async function initSession(
 ) {
   if (curPeer.sendTransport !== null || curPeer.recvTransport !== null) {
     callback({ error: "Session already initialized" });
-    socket.disconnect(true);
     return;
   }
 
@@ -38,7 +37,7 @@ export default async function initSession(
 
   if (curPeer.sendTransport === null || curPeer.recvTransport === null) {
     callback({ error: "Failed to create transports" });
-    socket.disconnect(true);
+    return;
   }
 
   callback({
@@ -54,12 +53,15 @@ export default async function initSession(
       iceCandidates: curPeer.recvTransport.iceCandidates,
       dtlsParameters: curPeer.recvTransport.dtlsParameters
     },
-    rtpCapabilities: router.rtpCapabilities
+    rtpCapabilities: curRoom.router.rtpCapabilities
   });
 
   socket.join(roomIdStr);
   socket.to(roomIdStr).emit("userJoined", {
-    id: socket.id,
-    userData: curPeer.userData
+    socketId: socket.id,
+    name: curPeer.userData.name,
+    email: curPeer.userData.email,
+    isMicOn: curPeer.isMicOn,
+    isVideoOn: curPeer.isVideoOn
   });
 }

@@ -6,7 +6,7 @@
  * @returns
  */
 export default async function changeConsumerState(curPeer, consumerId, state) {
-  if (typeof consumerId !== "string" || typeof paused !== "boolean") return;
+  if (typeof consumerId !== "string" || typeof state !== "boolean") return;
   const consumer = curPeer.consumers.get(consumerId);
   if (consumer !== undefined) {
     if (state) await consumer.resume();

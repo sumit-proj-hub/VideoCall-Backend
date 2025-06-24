@@ -28,8 +28,7 @@ export default async function consumeProducer(
 ) {
   if (
     typeof producerSocketId !== "string" ||
-    kind !== "video" ||
-    kind !== "audio" ||
+    (kind !== "video" && kind !== "audio") ||
     typeof rtpCapabilities !== "object"
   ) {
     callback({ error: "Invalid Parameters" });
