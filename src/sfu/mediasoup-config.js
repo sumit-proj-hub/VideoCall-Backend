@@ -1,6 +1,9 @@
 import mediasoup from "mediasoup";
 
-const workerSettings = { logLevel: "warn" };
+const workerSettings = {
+  logLevel: "debug", // “debug”, “warn”, “error” or “none”
+  logTags: ["info", "ice", "dtls", "rtp", "srtp", "rtcp", "rbe", "rtx"] // as needed
+};
 
 const routerOptions = {
   mediaCodecs: [
@@ -13,7 +16,10 @@ const routerOptions = {
     {
       kind: "video",
       mimeType: "video/VP8",
-      clockRate: 90000
+      clockRate: 90000,
+      parameters: {
+        "x-google-start-bitrate": 1000
+      }
     }
   ]
 };

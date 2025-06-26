@@ -3,7 +3,7 @@
  * @param {import("./room-state").PeerInfo} curPeer
  * @param {boolean} isSender
  * @param {object} dtlsParameters
- * @param {()=>void} callback
+ * @param {() => void} callback
  * @returns {Promise<void>}
  */
 export default async function transportConnect(
@@ -12,7 +12,7 @@ export default async function transportConnect(
   dtlsParameters,
   callback
 ) {
-  if (typeof isProducer !== "boolean" || typeof dtlsParameters !== "object")
+  if (typeof isSender !== "boolean" || typeof dtlsParameters !== "object")
     return;
   if (isSender) await curPeer.sendTransport.connect({ dtlsParameters });
   else await curPeer.recvTransport.connect({ dtlsParameters });

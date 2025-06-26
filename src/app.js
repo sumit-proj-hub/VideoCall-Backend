@@ -9,7 +9,12 @@ import socketValidateRoom from "./middlewares/socket-room-validation.middleware.
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 app.use(express.json());
 app.use("/auth", authRoute);

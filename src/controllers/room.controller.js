@@ -1,5 +1,6 @@
 import {
   createRoom,
+  deleteRoom,
   readRoom,
   readRoomsByOwner
 } from "../models/room.model.js";
@@ -48,4 +49,19 @@ const getRoomsByOwner = async (req, res) => {
   }
 };
 
-export { createRoomHandler, getRoom, getRoomsByOwner };
+const deleteRoomHandler = async (req, res) => {
+  try {
+    const { roomId } = req.body;
+    if (typeof roomId !== "number") {
+      res.status(400).json({ error: "invalid roomId", success: false });
+      return;
+    }
+    await deleteRoom(roomId);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+};
+
+export { createRoomHandler, getRoom, getRoomsByOwner, deleteRoomHandler };

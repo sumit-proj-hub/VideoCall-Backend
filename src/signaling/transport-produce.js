@@ -28,8 +28,7 @@ export default async function transportProduce(
 
   const producer = await curPeer.sendTransport.produce({
     kind,
-    rtpParameters,
-    paused: true
+    rtpParameters
   });
   producer.on("transportclose", () => producer.close());
 
